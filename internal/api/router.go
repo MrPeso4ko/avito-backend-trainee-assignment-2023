@@ -1,6 +1,7 @@
 package api
 
 import (
+	"avito-backend-trainee-assignment-2023/internal/config"
 	"avito-backend-trainee-assignment-2023/pkg/logging"
 	"avito-backend-trainee-assignment-2023/pkg/postgres"
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,7 @@ var logger = logging.GetLogger()
 func StartAPIServer() {
 	logger.Info("Starting API server...")
 
-	db, err := postgres.Connect("postgres://default:0000@172.17.0.1:5432/postgres?sslmode=disable") // TODO: config based on .env
+	db, err := postgres.Connect(config.GetPostgresDSN())
 	if err != nil {
 		logger.Errorf("error connecting to postgres: %+v", err)
 		return
@@ -51,7 +52,7 @@ func StartAPIServer() {
 		removeFromSegments(db, c)
 	})
 
-	err = r.Run("0.0.0.0:9053") // TODO: config based on .env
+	err = r.Run(config.GetAPIAddress())
 	if err != nil {
 		logger.Errorf("Error starting server: %+v", err)
 		return
