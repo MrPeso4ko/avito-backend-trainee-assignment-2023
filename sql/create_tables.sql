@@ -6,14 +6,9 @@ CREATE TABLE IF NOT EXISTS segments_manager.segments
     name VARCHAR UNIQUE NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS segments_manager.users
-(
-    id BIGSERIAL PRIMARY KEY
-);
-
 CREATE TABLE IF NOT EXISTS segments_manager.belongs_segment
 (
-    user_id    BIGINT REFERENCES segments_manager.users (id),
+    user_id    BIGINT,
     segment_id BIGINT REFERENCES segments_manager.segments (id),
     UNIQUE (user_id, segment_id)
 );
