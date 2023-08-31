@@ -91,7 +91,7 @@ func removeFromSegments(db *sqlx.DB, context *gin.Context) {
 	}
 	segments, err := bindAndValidateSegmentsBody(context)
 	if err != nil {
-		logger.Errorf("Could not remove user %s from segments: %+v", user.Id, err)
+		logger.Errorf("Could not remove user %d from segments: %+v", user.Id, err)
 	}
 	for _, segment := range segments.Segments {
 		res, err := storage.RemoveFromSegment(db, user, segment)
