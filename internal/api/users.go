@@ -35,7 +35,7 @@ func getSegments(db *sqlx.DB, context *gin.Context) {
 	}
 	segments, err := storage.GetSegments(db, user)
 	if err != nil {
-		logger.Errorf("Can't get user segments: %+v", err)
+		logger.Errorf("Can't get segments for user %d : %+v", user.Id, err)
 		context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": true, "message": "internal error"})
 		return
 	}
@@ -61,12 +61,12 @@ func bindAndValidateSegmentsBody(context *gin.Context) (*segmentsBody, error) {
 func addToSegments(db *sqlx.DB, context *gin.Context) {
 	user, err := bindUser(context)
 	if err != nil {
-		logger.Errorf("Could not get segments for user: %+v", err)
+		logger.Errorf("Could not add user to segments: %+v", err)
 		return
 	}
 	segments, err := bindAndValidateSegmentsBody(context)
 	if err != nil {
-		logger.Errorf("Could not get segments for user: %+v", err)
+		logger.Errorf("Could not add user %d to segments: %+v", user.Id, err)
 	}
 	for _, segment := range segments.Segments {
 		res, err := storage.AddUserToSegment(db, user, segment)
@@ -81,4 +81,29 @@ func addToSegments(db *sqlx.DB, context *gin.Context) {
 		}
 	}
 	context.JSON(http.StatusOK, gin.H{"error": false, "message": "Added user to segments"})
+}
+
+func removeFromSegments(db *sqlx.DB, context *gin.Context) {
+	user, err := bindUser(context)
+	if err != nil {
+		logger.Errorf("Could not remove user from segments: %+v", err)
+		return
+	}
+	segments, err := bindAndValidateSegmentsBody(context)
+	if err != nil {
+		logger.Errorf("Could not remove user %s from segments: %+v", user.Id, err)
+	}
+	for _, segment := range segments.Segments {
+		res, err := storage.RemoveFromSegment(db, user, segment)
+		if err != nil {
+			logger.Errorf("Couldn't remove user %d from segment %s: %+v", user.Id, segment.Name, err)
+			if res == -1 {
+				context.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": true, "message": fmt.Sprintf("segment %s not found", segment.Name)})
+			} else {
+				context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": true, "message": "internal error"})
+			}
+			return
+		}
+	}
+	context.JSON(http.StatusOK, gin.H{"error": false, "message": "Removed user from segments"})
 }

@@ -47,6 +47,10 @@ func StartAPIServer() {
 		addToSegments(db, c)
 	})
 
+	r.DELETE("/users", func(c *gin.Context) {
+		removeFromSegments(db, c)
+	})
+
 	err = r.Run("0.0.0.0:9053") // TODO: config based on .env
 	if err != nil {
 		logger.Errorf("Error starting server: %+v", err)
